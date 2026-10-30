@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cinepass Web - Confirmación y Pago</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body class="bg-light">
+
+    <!-- Navegación -->
+    <nav class="navbar navbar-dark bg-dark shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/">🎬 Cinepass Web</a>
+        </div>
+    </nav>
+
+    <!-- Contenido del Checkout -->
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card shadow border-0 p-4">
+                    <h3 class="fw-bold text-primary mb-3">🔒 Reserva Temporal (15 min)</h3>
+                    <p class="text-muted">Estás a un paso de asegurar tu perfil de streaming. Realiza el pago mediante Yape o Plin.</p>
+                    <hr>
+                    
+                    <div class="mb-4">
+                        <h5 class="fw-bold text-dark">Datos para el pago:</h5>
+                        <p class="mb-1">Yape / Plin Oficial: <strong class="text-success fs-5">987 654 321</strong></p>
+                        <p class="mb-1">Titular: <strong>Cinepass S.A.C.</strong></p>
+                    </div>
+
+                    <div class="alert alert-warning text-center" role="alert">
+                        ⏱️ Tienes <strong>15:00 minutos</strong> para realizar la transferencia y validar tu stock.
+                    </div>
+
+                    <div class="d-grid gap-2 mt-3">
+                        <button class="btn btn-success fw-bold py-2" onclick="alert('Simulación de pago enviada con éxito. Un administrador validará tu operación.')">
+                            Ya pagué (Enviar comprobante)
+                        </button>
+                        <a href="/" class="btn btn-outline-secondary">Cancelar y volver al catálogo</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
