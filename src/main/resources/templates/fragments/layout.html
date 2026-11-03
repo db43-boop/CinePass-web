@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head th:fragment="head(titulo)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${titulo} + ' · CinePass'">CinePass</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700;800&family=DM+Sans:wght@400;500;700&display=swap">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" th:href="@{/css/cinepass.css}">
+</head>
+<body>
+<header class="cp-nav" th:fragment="nav(activo)">
+    <div class="container">
+        <a class="cp-brand" th:href="@{/}">Cine<b>Pass</b></a>
+        <button class="cp-menu-toggle" aria-label="Abrir menú" aria-expanded="false" aria-controls="cp-main-nav">☰</button>
+        <nav id="cp-main-nav" aria-label="Principal">
+            <a th:href="@{/}" th:classappend="${activo == 'catalogo'} ? 'is-active'">Catálogo</a>
+            <a th:href="@{/cliente}" th:classappend="${activo == 'cliente'} ? 'is-active'">Mis pedidos</a>
+            <a th:if="${session.adminLogged != null}" th:href="@{/admin}" th:classappend="${activo == 'admin'} ? 'is-active'">Admin</a>
+            <a th:if="${session.adminLogged == null and activo != 'login'}" th:href="@{/admin/login}">Admin</a>
+            <a th:if="${session.adminLogged != null}" th:href="@{/admin/logout}" class="admin-logout-link">Cerrar sesión</a>
+        </nav>
+    </div>
+</header>
+<footer class="cp-foot" th:fragment="footer">
+    <div class="container">Pagos por Yape o Plin a Cinepass S.A.C. Validamos cada comprobante antes de entregar tu acceso.</div>
+</footer>
+<th:block th:fragment="scripts">
+    <div id="cp-live" class="visually-hidden" aria-live="polite"></div>
+    <script th:src="@{/js/cinepass.js}" defer></script>
+</th:block>
+</body>
+</html>

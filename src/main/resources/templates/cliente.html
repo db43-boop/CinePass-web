@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head th:replace="~{fragments/layout :: head('Mis pedidos')}"></head>
+<body th:data-ahora="${ahoraMs}">
+<header th:replace="~{fragments/layout :: nav('cliente')}"></header>
+
+<main class="container py-4 py-lg-5" style="max-width:900px">
+    <h1 class="h2 mb-1 animate-in">Mis pedidos</h1>
+    <p class="muted mb-0 animate-in">Sigue tus reservas, pagos y accesos en un solo lugar.</p>
+
+    <div class="stats">
+        <div class="stat animate-in"><b th:text="${activas}">1</b><span class="muted">Accesos activos</span></div>
+        <div class="stat animate-in"><b th:text="${pendientes}">2</b><span class="muted">Pedidos en curso</span></div>
+        <div class="stat d-none d-md-block animate-in"><b th:text="${#lists.size(reservas)}">4</b><span class="muted">Pedidos en total</span></div>
+    </div>
+
+    <!-- Filtros rápidos -->
+    <div class="filters mb-4 animate-in" role="toolbar" aria-label="Filtrar pedidos">
+        <button class="filter-btn is-active" data-filter="todos">Todos</button>
+        <button class="filter-btn" data-filter="RESERVADA">Reservados</button>
+        <button class="filter-btn" data-filter="EN_VALIDACION">En validación</button>
+        <button class="filter-btn" data-filter="ACTIVA">Activos</button>
+        <button class="filter-btn" data-filter="VENCIDA">Vencidos</button>
+    </div>
+
+    <div class="alert-ok" role="status" th:if="${mensaje}" th:text="${mensaje}">Recibimos tu comprobante.</div>
+
+    <section aria-label="Lista de pedidos">
+        <article class="order animate-in" th:each="r : ${reservas}" th:classappend="'p-' + ${r.slug} + (${r.estado == 'VENCIDA'} ? ' is-off' : '')" th:data-estado="${r.estado}">
+            <div class="order-head">
+                <div class="ticket-logo" aria-hidden="true" th:text="${#strings.substring(r.plataforma, 0, 1)}">N</div>
+                <div class="grow">
+                    <h3 th:text="${r.plataforma}">Netflix</h3>
+                    <span class="muted" th:text="${r.tipoPlan} + ' · S/ ' + ${#numbers.formatDecimal(r.precio, 1, 'COMMA', 2, 'POINT')}">Plan</span>
+                </div>
+            </div>
+
+            <div class="order-act" th:switch="${r.estado}">
+                <!-- Reserva con cuenta regresiva -->
+                <th:block th:case="'RESERVADA'">
+                    <div class="mini-t timer-wrap" data-timer th:data-expira="${r.expiraEn.toEpochMilli()}" data-total="900">
+                        <small class="muted d-block"><span class="m-ok">Vence en</span><span class="t-exp">Vencida</span></small>
+                        <strong data-time>15:00</strong>
+                        <div class="bar" aria-hidden="true"><i data-bar></i></div>
+                    </div>
+                    <a class="cp-btn cp-btn-primary cp-btn-sm" th:href="@{/checkout/{id}(id=${r.perfilId})}">Subir comprobante</a>
+                </th:block>
+                <th:block th:case="'EN_VALIDACION'">
+                    <span class="chip chip-warn">Validando tu pago</span>
+                </th:block>
+                <th:block th:case="'ACTIVA'">
+                    <span class="chip chip-ok">Activa · renueva el <span th:text="${r.renuevaEl}">14 nov</span></span>
+                </th:block>
+                <th:block th:case="*">
+                    <span class="chip chip-bad">Vencida</span>
+                    <a class="cp-btn cp-btn-ghost cp-btn-sm" th:href="@{/checkout/{id}(id=${r.perfilId}, nueva=1)}">Reservar de nuevo</a>
+                </th:block>
+            </div>
+
+            <div class="cred" th:if="${r.estado == 'ACTIVA'}">
+                <div><span class="muted">Correo</span><code class="mask" th:text="${r.accesoCorreo}">correo</code></div>
+                <div><span class="muted">Perfil</span><code th:text="${r.accesoPerfil}">Perfil 3</code></div>
+                <div><span class="muted">PIN</span><code class="mask" th:text="${r.accesoPin}">0000</code></div>
+                <div class="pt-2"><button type="button" class="cp-btn cp-btn-ghost cp-btn-sm" data-reveal>Mostrar datos</button>
+                    <button type="button" class="cp-btn cp-btn-ghost cp-btn-sm" th:data-copy="${r.accesoCorreo}">Copiar correo</button></div>
+            </div>
+        </article>
+
+        <div class="cp-card text-center" th:if="${#lists.isEmpty(reservas)}">
+            <h3 class="h5">Aún no tienes pedidos</h3>
+            <p class="muted">Elige un perfil y reserva en menos de un minuto.</p>
+            <a class="cp-btn cp-btn-primary" th:href="@{/}">Ver catálogo</a>
+        </div>
+    </section>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

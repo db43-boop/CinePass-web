@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head th:replace="~{fragments/layout :: head('Iniciar sesión · Admin')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: nav('login')}"></header>
+
+<main class="container py-5 py-lg-6 login-page">
+    <div class="login-card animate-in">
+        <div class="login-header">
+            <div class="login-icon" aria-hidden="true">🔐</div>
+            <h1 class="h3 mb-1">Panel de administración</h1>
+            <p class="muted mb-0">Ingresa tus credenciales para acceder.</p>
+        </div>
+
+        <div th:if="${error}" class="alert alert-bad animate-in" role="alert">
+            <strong>Credenciales incorrectas</strong>
+            <p class="mb-0" th:text="${error}">Usuario o contraseña no válidos.</p>
+        </div>
+
+        <form th:action="@{/admin/login}" method="post" class="login-form">
+            <div class="field">
+                <label for="username">Usuario</label>
+                <input type="text" id="username" name="username" class="input" placeholder="Ingresa tu usuario" autocomplete="username" required autofocus>
+            </div>
+            <div class="field">
+                <label for="password">Contraseña</label>
+                <input type="password" id="password" name="password" class="input" placeholder="Ingresa tu contraseña" autocomplete="current-password" required>
+            </div>
+            <button type="submit" class="cp-btn cp-btn-primary w-100">Iniciar sesión</button>
+        </form>
+
+        <div class="login-footer">
+            <a th:href="@{/}">← Volver al catálogo</a>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

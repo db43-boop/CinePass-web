@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head th:replace="~{fragments/layout :: head('Panel de administración')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: nav('admin')}"></header>
+
+<main class="container py-4 py-lg-5" style="max-width:1100px">
+    <h1 class="h2 mb-1 animate-in">Panel de administración</h1>
+    <p class="muted mb-0 animate-in">Gestiona comprobantes, valida pagos y entrega accesos a tus clientes.</p>
+
+    <!-- Estadísticas rápidas -->
+    <div class="stats">
+        <div class="stat animate-in">
+            <b th:text="${pendientes}">3</b>
+            <span class="muted">Comprobantes pendientes</span>
+        </div>
+        <div class="stat animate-in">
+            <b th:text="${aprobadosHoy}">7</b>
+            <span class="muted">Aprobados hoy</span>
+        </div>
+        <div class="stat d-none d-md-block animate-in">
+            <b th:text="${totalMes}">42</b>
+            <span class="muted">Ventas del mes</span>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filters mb-4 animate-in" role="toolbar" aria-label="Filtrar comprobantes">
+        <button class="filter-btn is-active" data-filter="todos">Todos</button>
+        <button class="filter-btn" data-filter="Pendiente">Pendientes</button>
+        <button class="filter-btn" data-filter="Aprobado">Aprobados</button>
+        <button class="filter-btn" data-filter="Rechazado">Rechazados</button>
+    </div>
+
+    <!-- Tabla de comprobantes -->
+    <div class="cp-card p-0 overflow-hidden animate-in">
+        <div class="admin-table-wrap">
+            <table class="admin-table" aria-label="Comprobantes de pago">
+                <thead>
+                    <tr>
+                        <th scope="col">Cliente</th>
+                        <th scope="col">Plataforma</th>
+                        <th scope="col">Método</th>
+                        <th scope="col">Operación</th>
+                        <th scope="col">Monto</th>
+                        <th scope="col">Estado</th>
+                        <th scope="col">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr data-estado="Pendiente">
+                        <td>
+                            <div class="admin-client">
+                                <strong>María López</strong>
+                                <small class="muted">maria@email.com</small>
+                            </div>
+                        </td>
+                        <td><span class="admin-platform p-netflix">Netflix</span></td>
+                        <td><span class="admin-method">Yape</span></td>
+                        <td><code>8742...1039</code></td>
+                        <td><strong>S/ 12.00</strong></td>
+                        <td><span class="chip chip-warn">Pendiente</span></td>
+                        <td>
+                            <div class="admin-actions">
+                                <button class="cp-btn cp-btn-sm cp-btn-ok" title="Aprobar">✓ Aprobar</button>
+                                <button class="cp-btn cp-btn-sm cp-btn-bad" title="Rechazar">✕ Rechazar</button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr data-estado="Pendiente">
+                        <td>
+                            <div class="admin-client">
+                                <strong>Carlos Ríos</strong>
+                                <small class="muted">carlos@email.com</small>
+                            </div>
+                        </td>
+                        <td><span class="admin-platform p-max">Max (HBO)</span></td>
+                        <td><span class="admin-method">Plin</span></td>
+                        <td><code>5521...8847</code></td>
+                        <td><strong>S/ 10.00</strong></td>
+                        <td><span class="chip chip-warn">Pendiente</span></td>
+                        <td>
+                            <div class="admin-actions">
+                                <button class="cp-btn cp-btn-sm cp-btn-ok" title="Aprobar">✓ Aprobar</button>
+                                <button class="cp-btn cp-btn-sm cp-btn-bad" title="Rechazar">✕ Rechazar</button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr data-estado="Pendiente">
+                        <td>
+                            <div class="admin-client">
+                                <strong>Ana Torres</strong>
+                                <small class="muted">ana.t@email.com</small>
+                            </div>
+                        </td>
+                        <td><span class="admin-platform p-disney">Disney+</span></td>
+                        <td><span class="admin-method">Yape</span></td>
+                        <td><code>3390...6612</code></td>
+                        <td><strong>S/ 11.00</strong></td>
+                        <td><span class="chip chip-warn">Pendiente</span></td>
+                        <td>
+                            <div class="admin-actions">
+                                <button class="cp-btn cp-btn-sm cp-btn-ok" title="Aprobar">✓ Aprobar</button>
+                                <button class="cp-btn cp-btn-sm cp-btn-bad" title="Rechazar">✕ Rechazar</button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr data-estado="Aprobado">
+                        <td>
+                            <div class="admin-client">
+                                <strong>Pedro Quispe</strong>
+                                <small class="muted">pedro.q@email.com</small>
+                            </div>
+                        </td>
+                        <td><span class="admin-platform p-netflix">Netflix</span></td>
+                        <td><span class="admin-method">Plin</span></td>
+                        <td><code>7710...4423</code></td>
+                        <td><strong>S/ 12.00</strong></td>
+                        <td><span class="chip chip-ok">Aprobado</span></td>
+                        <td>
+                            <button class="cp-btn cp-btn-sm cp-btn-ghost" title="Ver detalles">Ver</button>
+                        </td>
+                    </tr>
+                    <tr data-estado="Aprobado">
+                        <td>
+                            <div class="admin-client">
+                                <strong>Laura Mendoza</strong>
+                                <small class="muted">laura.m@email.com</small>
+                            </div>
+                        </td>
+                        <td><span class="admin-platform p-disney">Disney+</span></td>
+                        <td><span class="admin-method">Yape</span></td>
+                        <td><code>2284...9901</code></td>
+                        <td><strong>S/ 11.00</strong></td>
+                        <td><span class="chip chip-ok">Aprobado</span></td>
+                        <td>
+                            <button class="cp-btn cp-btn-sm cp-btn-ghost" title="Ver detalles">Ver</button>
+                        </td>
+                    </tr>
+                    <tr data-estado="Rechazado">
+                        <td>
+                            <div class="admin-client">
+                                <strong>José Huamán</strong>
+                                <small class="muted">jose.h@email.com</small>
+                            </div>
+                        </td>
+                        <td><span class="admin-platform p-max">Max (HBO)</span></td>
+                        <td><span class="admin-method">Yape</span></td>
+                        <td><code>1156...3378</code></td>
+                        <td><strong>S/ 10.00</strong></td>
+                        <td><span class="chip chip-bad">Rechazado</span></td>
+                        <td>
+                            <button class="cp-btn cp-btn-sm cp-btn-ghost" title="Ver detalles">Ver</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Estado sin comprobantes (oculto por defecto) -->
+    <div class="cp-card text-center admin-empty" style="display:none">
+        <h3 class="h5">No hay comprobantes</h3>
+        <p class="muted">Los nuevos comprobantes aparecerán aquí cuando los clientes realicen pagos.</p>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>
