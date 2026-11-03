@@ -18,6 +18,7 @@
         </div>
 
         <form th:action="@{/admin/login}" method="post" class="login-form">
+            <input type="hidden" name="_formToken" th:value="${formToken}">
             <div class="field">
                 <label for="username">Usuario</label>
                 <input type="text" id="username" name="username" class="input" placeholder="Ingresa tu usuario" autocomplete="username" required autofocus>

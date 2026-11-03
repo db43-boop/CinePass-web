@@ -53,7 +53,8 @@
 
         <div class="col-lg-7 order-lg-1">
             <form id="form-comprobante" method="post" enctype="multipart/form-data" novalidate
-                  th:action="@{/checkout/{id}/comprobante(id=${perfil.id})}">
+                  th:action="@{/pedidos/{id}/comprobante(id=${pedidoId})}">
+                <input type="hidden" name="_formToken" th:value="${formToken}">
                 <fieldset>
                     <section class="cp-card animate-in" aria-labelledby="h-pago">
                         <h2 id="h-pago"><span class="sec-n">1</span>Paga con Yape o Plin</h2>

@@ -18,6 +18,7 @@ public class Reserva {
     private String estado;
     private Instant expiraEn;      // solo RESERVADA
     private String accesoCorreo;   // solo ACTIVA
+    private String accesoPassword;
     private String accesoPerfil;
     private String accesoPin;
     private String renuevaEl;

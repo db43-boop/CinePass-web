@@ -44,6 +44,7 @@ CREATE TABLE IF NOT EXISTS cuentas_maestras (
     id_plataforma INT UNSIGNED NOT NULL,
     correo_cuenta VARCHAR(150) NOT NULL,
     password_cuenta VARCHAR(255) NOT NULL,
+    password_huella BINARY(32) GENERATED ALWAYS AS (UNHEX(SHA2(password_cuenta, 256))) STORED,
     tipo_plan VARCHAR(80) NULL,
     fecha_adquisicion DATE NULL,
     fecha_vencimiento DATE NULL,
@@ -52,6 +53,7 @@ CREATE TABLE IF NOT EXISTS cuentas_maestras (
     observaciones VARCHAR(500) NULL,
     fecha_registro TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id_cuenta_maestra),
+    CONSTRAINT uq_cuentas_password_huella UNIQUE (password_huella),
     CONSTRAINT fk_cuentas_plataformas
         FOREIGN KEY (id_plataforma) REFERENCES plataformas (id_plataforma)
         ON UPDATE CASCADE ON DELETE RESTRICT,

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head th:replace="~{fragments/layout :: head('Inventario')}"></head>
+<body><header th:replace="~{fragments/layout :: nav('admin')}"></header>
+<main class="container py-5" style="max-width:800px">
+    <h1>Inventario</h1>
+    <a th:href="@{/admin}">Volver a comprobantes</a>
+    <p th:if="${mensaje}" th:text="${mensaje}" role="status"></p>
+    <p th:if="${error}" th:text="${error}" role="alert"></p>
+    <section class="cp-card"><h2>Nueva cuenta maestra</h2>
+        <form method="post" th:action="@{/admin/cuentas}">
+            <input type="hidden" name="_formToken" th:value="${formToken}">
+            <div class="field"><label>Plataforma <select class="input" name="plataformaId" required><option th:each="p : ${plataformas}" th:value="${p.id}" th:text="${p.nombre}"></option></select></label></div>
+            <div class="field"><label>Correo <input class="input" name="correo" type="email" maxlength="150" required></label></div>
+            <div class="field"><label>Contraseña <input class="input" name="password" type="password" maxlength="255" required></label></div>
+            <div class="field"><label>Plan <input class="input" name="tipoPlan" maxlength="80"></label></div>
+            <div class="field"><label>Costo <input class="input" name="costo" type="number" min="0" step="0.01" required></label></div>
+            <button class="cp-btn cp-btn-primary">Crear cuenta</button>
+        </form>
+    </section>
+    <section class="cp-card"><h2>Nuevo perfil</h2>
+        <form method="post" th:action="@{/admin/perfiles}">
+            <input type="hidden" name="_formToken" th:value="${formToken}">
+            <div class="field"><label>Cuenta <select class="input" name="cuentaId" required><option th:each="c : ${cuentas}" th:value="${c.id}" th:text="${c.correoCuenta}"></option></select></label></div>
+            <div class="field"><label>Nombre <input class="input" name="nombre" maxlength="80" required></label></div>
+            <div class="field"><label>PIN <input class="input" name="pin" maxlength="100"></label></div>
+            <div class="field"><label>Precio <input class="input" name="precio" type="number" min="0" step="0.01" required></label></div>
+            <button class="cp-btn cp-btn-primary">Crear perfil</button>
+        </form>
+    </section>
+</main><footer th:replace="~{fragments/layout :: footer}"></footer></body></html>

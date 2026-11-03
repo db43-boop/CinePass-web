@@ -43,7 +43,7 @@
                         <strong data-time>15:00</strong>
                         <div class="bar" aria-hidden="true"><i data-bar></i></div>
                     </div>
-                    <a class="cp-btn cp-btn-primary cp-btn-sm" th:href="@{/checkout/{id}(id=${r.perfilId})}">Subir comprobante</a>
+                    <a class="cp-btn cp-btn-primary cp-btn-sm" th:href="@{/pedidos/{id}/checkout(id=${r.id})}">Subir comprobante</a>
                 </th:block>
                 <th:block th:case="'EN_VALIDACION'">
                     <span class="chip chip-warn">Validando tu pago</span>
@@ -59,6 +59,7 @@
 
             <div class="cred" th:if="${r.estado == 'ACTIVA'}">
                 <div><span class="muted">Correo</span><code class="mask" th:text="${r.accesoCorreo}">correo</code></div>
+                <div><span class="muted">Contraseña</span><code class="mask" th:text="${r.accesoPassword}">contraseña</code></div>
                 <div><span class="muted">Perfil</span><code th:text="${r.accesoPerfil}">Perfil 3</code></div>
                 <div><span class="muted">PIN</span><code class="mask" th:text="${r.accesoPin}">0000</code></div>
                 <div class="pt-2"><button type="button" class="cp-btn cp-btn-ghost cp-btn-sm" data-reveal>Mostrar datos</button>

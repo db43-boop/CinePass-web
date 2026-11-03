@@ -17,6 +17,27 @@ import java.util.concurrent.ConcurrentHashMap;
 @Controller
 public class HomeController {
 
+    private final com.cinepass.app.service.CatalogoService catalogoService;
+    private final com.cinepass.app.service.AutenticacionService autenticacionService;
+    private final com.cinepass.app.service.PedidoService pedidoService;
+    private final com.cinepass.app.service.ReservaService reservaService;
+    private final com.cinepass.app.service.ComprobanteService comprobanteService;
+    private final com.cinepass.app.service.ValidacionPagoService validacionPagoService;
+
+    public HomeController(com.cinepass.app.service.CatalogoService catalogoService,
+                          com.cinepass.app.service.AutenticacionService autenticacionService,
+                          com.cinepass.app.service.PedidoService pedidoService,
+                          com.cinepass.app.service.ReservaService reservaService,
+                          com.cinepass.app.service.ComprobanteService comprobanteService,
+                          com.cinepass.app.service.ValidacionPagoService validacionPagoService) {
+        this.catalogoService = catalogoService;
+        this.autenticacionService = autenticacionService;
+        this.pedidoService = pedidoService;
+        this.reservaService = reservaService;
+        this.comprobanteService = comprobanteService;
+        this.validacionPagoService = validacionPagoService;
+    }
+
     private static final int RESERVA_SEG = 15 * 60;
 
     // Simulación en memoria. En producción: tabla "reserva" con expira_en como fuente de verdad.
@@ -37,7 +58,48 @@ public class HomeController {
     public String verCheckout(@PathVariable Long id,
                               @RequestParam(required = false) Integer demo,
                               @RequestParam(required = false) String nueva,
-                              Model model) {
+                              Model model, HttpSession session) {
+        Long usuarioId = (Long) session.getAttribute("usuarioId");
+        if (usuarioId == null) return "redirect:/login";
+        model.addAttribute("error", "Selecciona un perfil disponible para crear una reserva.");
+        return "redirect:/";
+    }
+
+    @PostMapping("/reservas/{id}")
+    public String crearReserva(@PathVariable Long id, HttpSession session, RedirectAttributes ra) {
+        Long usuarioId = (Long) session.getAttribute("usuarioId");
+        if (usuarioId == null) return "redirect:/login";
+        try {
+            var pedido = reservaService.reservar(usuarioId, id);
+            return "redirect:/pedidos/" + pedido.getId() + "/checkout";
+        } catch (IllegalArgumentException | IllegalStateException ex) {
+            ra.addFlashAttribute("error", ex.getMessage());
+            return "redirect:/";
+        }
+    }
+
+    @GetMapping("/pedidos/{id}/checkout")
+    public String checkoutPedido(@PathVariable Long id, HttpSession session, Model model) {
+        Long usuarioId = (Long) session.getAttribute("usuarioId");
+        if (usuarioId == null) return "redirect:/login";
+        var pedido = pedidoService.listar(usuarioId).stream().filter(p -> p.id().equals(id)).findFirst().orElse(null);
+        if (pedido == null || !"RESERVADA".equals(pedido.estado()) || pedido.fechaLimiteReserva() == null)
+            return "redirect:/cliente";
+        Perfil perfil = new Perfil();
+        perfil.setId(pedido.perfilId());
+        perfil.setPlataforma(pedido.plataforma());
+        perfil.setTipoPlan(pedido.plan());
+        perfil.setPrecio(pedido.monto().doubleValue());
+        model.addAttribute("perfil", perfil);
+        model.addAttribute("pedidoId", pedido.id());
+        model.addAttribute("expiraMs", pedido.fechaLimiteReserva().atZone(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli());
+        model.addAttribute("ahoraMs", System.currentTimeMillis());
+        model.addAttribute("totalSeg", RESERVA_SEG);
+        return "checkout";
+    }
+
+    /* Legacy simulated checkout is no longer reachable. */
+    private String checkoutSimulado(Long id, Integer demo, String nueva, Model model) {
         Perfil perfil = catalogo().stream().filter(p -> p.getId().equals(id)).findFirst().orElse(null);
         if (perfil == null) return "redirect:/";
 
@@ -53,32 +115,62 @@ public class HomeController {
         return "checkout";
     }
 
-    @PostMapping("/checkout/{id}/comprobante")
-    public String enviarComprobante(@PathVariable Long id,
-                                    @RequestParam String metodo,
-                                    @RequestParam String operacion,
-                                    @RequestParam String titular,
-                                    @RequestParam("comprobante") MultipartFile comprobante,
-                                    RedirectAttributes ra) {
-        Instant expira = reservasActivas.get(id);
-        if (expira == null || Instant.now().isAfter(expira) || comprobante.isEmpty()) {
-            return "redirect:/checkout/" + id; // la página mostrará el estado vencido
+    @PostMapping("/pedidos/{id}/comprobante")
+    public String registrarComprobante(@PathVariable Long id, @RequestParam String metodo,
+                                       @RequestParam String operacion, @RequestParam String titular,
+                                       @RequestParam("comprobante") MultipartFile archivo,
+                                       HttpSession session, RedirectAttributes ra) throws java.io.IOException {
+        Long usuarioId = (Long) session.getAttribute("usuarioId");
+        if (usuarioId == null) return "redirect:/login";
+        try {
+            comprobanteService.registrar(usuarioId, id,
+                    new com.cinepass.app.dto.ComprobanteRequest(metodo, operacion, titular, archivo));
+            ra.addFlashAttribute("mensaje", "Recibimos tu comprobante y está pendiente de validación.");
+            return "redirect:/cliente";
+        } catch (IllegalArgumentException | IllegalStateException ex) {
+            ra.addFlashAttribute("error", ex.getMessage());
+            return "redirect:/pedidos/" + id + "/checkout";
         }
-        // TODO: guardar el archivo, registrar el pago (metodo, operacion, titular) y marcar EN_VALIDACION.
-        reservasActivas.remove(id);
-        ra.addFlashAttribute("mensaje", "Recibimos tu comprobante. Lo validamos y te avisamos en este panel.");
-        return "redirect:/cliente";
     }
+
 
     @GetMapping("/admin")
     public String panelAdmin(HttpSession session, Model model) {
         if (session.getAttribute("adminLogged") == null) {
             return "redirect:/admin/login";
         }
-        model.addAttribute("pendientes", 3);
-        model.addAttribute("aprobadosHoy", 7);
-        model.addAttribute("totalMes", 42);
-        return "admin";
+        Long adminId = (Long) session.getAttribute("adminLogged");
+        var comprobantes = validacionPagoService.pendientes(adminId);
+        model.addAttribute("comprobantes", comprobantes);
+        model.addAttribute("pendientes", comprobantes.size());
+        return "admin-pendientes";
+    }
+
+    @PostMapping("/admin/comprobantes/{id}/resolver")
+    public String resolverComprobante(@PathVariable Long id, @RequestParam boolean aprobar,
+                                      HttpSession session, RedirectAttributes ra) {
+        Long adminId = (Long) session.getAttribute("adminLogged");
+        if (adminId == null) return "redirect:/admin/login";
+        try {
+            validacionPagoService.resolver(adminId, id, aprobar);
+            ra.addFlashAttribute("mensaje", aprobar ? "Pago aprobado." : "Pago rechazado.");
+        } catch (IllegalArgumentException | IllegalStateException ex) {
+            ra.addFlashAttribute("error", ex.getMessage());
+        }
+        return "redirect:/admin";
+    }
+
+    @GetMapping("/admin/comprobantes/{id}/archivo")
+    @ResponseBody
+    public org.springframework.http.ResponseEntity<byte[]> descargarComprobante(@PathVariable Long id, HttpSession session) throws java.io.IOException {
+        Long adminId = (Long) session.getAttribute("adminLogged");
+        if (adminId == null) return org.springframework.http.ResponseEntity.status(401).build();
+        return org.springframework.http.ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=\"comprobante\"")
+                .header("X-Content-Type-Options", "nosniff")
+                .header("Cache-Control", "no-store")
+                .contentType(org.springframework.http.MediaType.APPLICATION_OCTET_STREAM)
+                .body(validacionPagoService.leerComprobante(adminId, id));
     }
 
     @GetMapping("/admin/login")
@@ -93,37 +185,45 @@ public class HomeController {
     public String loginSubmit(@RequestParam String username,
                               @RequestParam String password,
                               HttpSession session,
+                              jakarta.servlet.http.HttpServletRequest request,
                               Model model) {
-        if ("admin".equals(username) && "admin123".equals(password)) {
-            session.setAttribute("adminLogged", username);
-            return "redirect:/admin";
-        }
+        try {
+            var usuario = autenticacionService.autenticar(username, password);
+            if ("ADMINISTRADOR".equals(usuario.rol())) {
+                request.changeSessionId();
+                session.setAttribute("adminLogged", usuario.id());
+                return "redirect:/admin";
+            }
+        } catch (SecurityException ignored) { }
         model.addAttribute("error", "Usuario o contraseña incorrectos. Inténtalo de nuevo.");
         return "login";
     }
 
-    @GetMapping("/admin/logout")
+    @PostMapping("/admin/logout")
     public String logout(HttpSession session) {
         session.invalidate();
         return "redirect:/admin/login";
     }
 
     @GetMapping("/cliente")
-    public String panelCliente(Model model) {
+    public String panelCliente(Model model, HttpSession session, jakarta.servlet.http.HttpServletResponse response) {
+        response.setHeader("Cache-Control", "no-store");
+        Long usuarioId = (Long) session.getAttribute("usuarioId");
+        if (usuarioId == null) return "redirect:/login";
         long ahora = System.currentTimeMillis();
-        List<Reserva> reservas = List.of(
-            Reserva.builder().id(101L).perfilId(1L).plataforma("Netflix").slug("netflix")
-                .tipoPlan("Estándar - 1 Perfil (4K)").precio(12.0).estado("RESERVADA")
-                .expiraEn(Instant.ofEpochMilli(ahora + 11 * 60_000L + 20_000L)).build(),
-            Reserva.builder().id(102L).perfilId(2L).plataforma("Max (HBO)").slug("max")
-                .tipoPlan("Plan Mes Completo").precio(10.0).estado("EN_VALIDACION").build(),
-            Reserva.builder().id(103L).perfilId(3L).plataforma("Disney+").slug("disney")
-                .tipoPlan("Familiar - 1 Dispositivo").precio(11.0).estado("ACTIVA")
-                .accesoCorreo("cuenta.disney07@cinepass.pe").accesoPerfil("Perfil 3").accesoPin("4821")
-                .renuevaEl("14 nov 2026").build(),
-            Reserva.builder().id(104L).perfilId(1L).plataforma("Netflix").slug("netflix")
-                .tipoPlan("Estándar - 1 Perfil (4K)").precio(12.0).estado("VENCIDA").build()
-        );
+        List<Reserva> reservas = pedidoService.listar(usuarioId).stream().map(p -> {
+            String nombre = p.plataforma().toLowerCase(java.util.Locale.ROOT);
+            var builder = Reserva.builder().id(p.id()).perfilId(p.perfilId()).plataforma(p.plataforma())
+                    .slug(nombre.contains("netflix") ? "netflix" : nombre.contains("disney") ? "disney" : "max")
+                    .tipoPlan(p.plan()).precio(p.monto().doubleValue()).estado(p.estado());
+            if (p.fechaLimiteReserva() != null)
+                builder.expiraEn(p.fechaLimiteReserva().atZone(java.time.ZoneId.systemDefault()).toInstant());
+            if ("ACTIVA".equals(p.estado())) {
+                var credenciales = pedidoService.credenciales(usuarioId, p.id());
+                builder.accesoCorreo(credenciales.correo()).accesoPassword(credenciales.password()).accesoPerfil(credenciales.perfil()).accesoPin(credenciales.pin());
+            }
+            return builder.build();
+        }).toList();
         model.addAttribute("reservas", reservas);
         model.addAttribute("activas", reservas.stream().filter(r -> r.getEstado().equals("ACTIVA")).count());
         model.addAttribute("pendientes", reservas.stream()
@@ -133,13 +233,7 @@ public class HomeController {
     }
 
     private List<Perfil> catalogo() {
-        return List.of(
-            perfil(1L, "Netflix", "netflix", "Estándar - 1 Perfil (4K)", 12.00,
-                "https://www.mercadonegro.pe/wp-content/uploads/2023/12/netflix-2.png"),
-            perfil(2L, "Max (HBO)", "max", "Plan Mes Completo", 10.00,
-                "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQl93CG_oNImmzxYnJ2DopAmS2CIEQEQp9HYkI-44OHGaLrc2QqJnmFtVNH&s=10"),
-            perfil(3L, "Disney+", "disney", "Familiar - 1 Dispositivo", 11.00,
-                "https://images.unsplash.com/photo-1596727147705-61a532a659bd?w=600&h=400&fit=crop"));
+        return catalogoService.disponibles();
     }
 
     private Perfil perfil(Long id, String plataforma, String slug, String plan, double precio, String imagenUrl) {

@@ -20,7 +20,8 @@
             <a th:href="@{/cliente}" th:classappend="${activo == 'cliente'} ? 'is-active'">Mis pedidos</a>
             <a th:if="${session.adminLogged != null}" th:href="@{/admin}" th:classappend="${activo == 'admin'} ? 'is-active'">Admin</a>
             <a th:if="${session.adminLogged == null and activo != 'login'}" th:href="@{/admin/login}">Admin</a>
-            <a th:if="${session.adminLogged != null}" th:href="@{/admin/logout}" class="admin-logout-link">Cerrar sesión</a>
+            <form th:if="${session.adminLogged != null}" method="post" th:action="@{/admin/logout}"><input type="hidden" name="_formToken" th:value="${formToken}"><button type="submit">Cerrar sesión</button></form>
+            <form th:if="${session.usuarioId != null}" method="post" th:action="@{/salir}"><input type="hidden" name="_formToken" th:value="${formToken}"><button type="submit">Cerrar sesión</button></form>
         </nav>
     </div>
 </header>
