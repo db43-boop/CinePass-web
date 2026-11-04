@@ -4,15 +4,14 @@ CREATE DATABASE IF NOT EXISTS cinepass_db
 
 USE cinepass_db;
 
-CREATE TABLE IF NOT EXISTS roles (
-    id_rol INT UNSIGNED NOT NULL AUTO_INCREMENT,
+CREATE TABLE roles (
+    id_rol INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(30) NOT NULL,
-    PRIMARY KEY (id_rol),
     CONSTRAINT uq_roles_nombre UNIQUE (nombre)
 ) ENGINE=InnoDB;
 
-CREATE TABLE IF NOT EXISTS usuarios (
-    id_usuario BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+CREATE TABLE usuarios (
+    id_usuario BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     id_rol INT UNSIGNED NOT NULL,
     nombres VARCHAR(100) NOT NULL,
     apellidos VARCHAR(100) NOT NULL,
@@ -21,7 +20,6 @@ CREATE TABLE IF NOT EXISTS usuarios (
     telefono VARCHAR(20) NULL,
     estado ENUM('ACTIVO', 'INACTIVO', 'SUSPENDIDO') NOT NULL DEFAULT 'ACTIVO',
     fecha_registro TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (id_usuario),
     CONSTRAINT uq_usuarios_correo UNIQUE (correo),
     CONSTRAINT fk_usuarios_roles
         FOREIGN KEY (id_rol) REFERENCES roles (id_rol)
@@ -29,18 +27,17 @@ CREATE TABLE IF NOT EXISTS usuarios (
     INDEX idx_usuarios_rol_estado (id_rol, estado)
 ) ENGINE=InnoDB;
 
-CREATE TABLE IF NOT EXISTS plataformas (
-    id_plataforma INT UNSIGNED NOT NULL AUTO_INCREMENT,
+CREATE TABLE plataformas (
+    id_plataforma INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(80) NOT NULL,
     descripcion VARCHAR(500) NULL,
     logo_url VARCHAR(500) NULL,
     estado ENUM('ACTIVA', 'INACTIVA') NOT NULL DEFAULT 'ACTIVA',
-    PRIMARY KEY (id_plataforma),
     CONSTRAINT uq_plataformas_nombre UNIQUE (nombre)
 ) ENGINE=InnoDB;
 
-CREATE TABLE IF NOT EXISTS cuentas_maestras (
-    id_cuenta_maestra BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+CREATE TABLE cuentas_maestras (
+    id_cuenta_maestra BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     id_plataforma INT UNSIGNED NOT NULL,
     correo_cuenta VARCHAR(150) NOT NULL,
     password_cuenta VARCHAR(255) NOT NULL,
@@ -52,7 +49,6 @@ CREATE TABLE IF NOT EXISTS cuentas_maestras (
     estado ENUM('ACTIVA', 'INACTIVA', 'VENCIDA') NOT NULL DEFAULT 'ACTIVA',
     observaciones VARCHAR(500) NULL,
     fecha_registro TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (id_cuenta_maestra),
     CONSTRAINT uq_cuentas_password_huella UNIQUE (password_huella),
     CONSTRAINT fk_cuentas_plataformas
         FOREIGN KEY (id_plataforma) REFERENCES plataformas (id_plataforma)
@@ -66,8 +62,8 @@ CREATE TABLE IF NOT EXISTS cuentas_maestras (
     INDEX idx_cuentas_plataforma_estado (id_plataforma, estado)
 ) ENGINE=InnoDB;
 
-CREATE TABLE IF NOT EXISTS perfiles (
-    id_perfil BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+CREATE TABLE perfiles (
+    id_perfil BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     id_cuenta_maestra BIGINT UNSIGNED NOT NULL,
     nombre_perfil VARCHAR(80) NOT NULL,
     pin_acceso VARCHAR(100) NULL,
@@ -75,7 +71,6 @@ CREATE TABLE IF NOT EXISTS perfiles (
     estado ENUM('DISPONIBLE', 'RESERVADO', 'VENDIDO') NOT NULL DEFAULT 'DISPONIBLE',
     fecha_reserva DATETIME NULL,
     fecha_registro TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (id_perfil),
     CONSTRAINT uq_perfil_cuenta_nombre UNIQUE (id_cuenta_maestra, nombre_perfil),
     CONSTRAINT fk_perfiles_cuentas
         FOREIGN KEY (id_cuenta_maestra) REFERENCES cuentas_maestras (id_cuenta_maestra)
@@ -85,8 +80,8 @@ CREATE TABLE IF NOT EXISTS perfiles (
     INDEX idx_perfiles_cuenta_estado (id_cuenta_maestra, estado)
 ) ENGINE=InnoDB;
 
-CREATE TABLE IF NOT EXISTS pedidos (
-    id_pedido BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+CREATE TABLE pedidos (
+    id_pedido BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     id_usuario BIGINT UNSIGNED NOT NULL,
     id_perfil BIGINT UNSIGNED NOT NULL,
     codigo_pedido VARCHAR(40) NOT NULL,
@@ -103,7 +98,6 @@ CREATE TABLE IF NOT EXISTS pedidos (
     fecha_limite_reserva DATETIME NULL,
     fecha_actualizacion TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
         ON UPDATE CURRENT_TIMESTAMP,
-    PRIMARY KEY (id_pedido),
     CONSTRAINT uq_pedidos_codigo UNIQUE (codigo_pedido),
     CONSTRAINT fk_pedidos_usuarios
         FOREIGN KEY (id_usuario) REFERENCES usuarios (id_usuario)
@@ -117,8 +111,8 @@ CREATE TABLE IF NOT EXISTS pedidos (
     INDEX idx_pedidos_estado_fecha (estado, fecha_pedido)
 ) ENGINE=InnoDB;
 
-CREATE TABLE IF NOT EXISTS transacciones (
-    id_transaccion BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+CREATE TABLE transacciones (
+    id_transaccion BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     id_pedido BIGINT UNSIGNED NOT NULL,
     metodo_pago VARCHAR(50) NOT NULL,
     numero_operacion VARCHAR(100) NOT NULL,
@@ -134,7 +128,6 @@ CREATE TABLE IF NOT EXISTS transacciones (
     fecha_registro TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     fecha_actualizacion TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
         ON UPDATE CURRENT_TIMESTAMP,
-    PRIMARY KEY (id_transaccion),
     CONSTRAINT uq_transaccion_metodo_operacion UNIQUE (metodo_pago, numero_operacion),
     CONSTRAINT fk_transacciones_pedidos
         FOREIGN KEY (id_pedido) REFERENCES pedidos (id_pedido)
@@ -144,8 +137,8 @@ CREATE TABLE IF NOT EXISTS transacciones (
     INDEX idx_transacciones_estado_fecha (estado, fecha_registro)
 ) ENGINE=InnoDB;
 
-CREATE TABLE IF NOT EXISTS vouchers (
-    id_voucher BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+CREATE TABLE vouchers (
+    id_voucher BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     id_transaccion BIGINT UNSIGNED NOT NULL,
     nombre_archivo VARCHAR(255) NOT NULL,
     ruta_archivo VARCHAR(1000) NOT NULL,
@@ -157,7 +150,6 @@ CREATE TABLE IF NOT EXISTS vouchers (
     fecha_registro TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     fecha_actualizacion TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
         ON UPDATE CURRENT_TIMESTAMP,
-    PRIMARY KEY (id_voucher),
     CONSTRAINT uq_vouchers_transaccion UNIQUE (id_transaccion),
     CONSTRAINT fk_vouchers_transacciones
         FOREIGN KEY (id_transaccion) REFERENCES transacciones (id_transaccion)
@@ -166,8 +158,8 @@ CREATE TABLE IF NOT EXISTS vouchers (
     INDEX idx_vouchers_estado_fecha (estado, fecha_registro)
 ) ENGINE=InnoDB;
 
-CREATE TABLE IF NOT EXISTS auditoria_vouchers (
-    id_auditoria BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+CREATE TABLE auditoria_vouchers (
+    id_auditoria BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     id_voucher BIGINT UNSIGNED NOT NULL,
     id_usuario_actor BIGINT UNSIGNED NULL,
     accion ENUM('CREADO', 'ACTUALIZADO') NOT NULL,
@@ -175,7 +167,6 @@ CREATE TABLE IF NOT EXISTS auditoria_vouchers (
     estado_nuevo ENUM('PENDIENTE', 'APROBADO', 'RECHAZADO', 'OBSERVADO') NOT NULL,
     detalle VARCHAR(500) NOT NULL,
     fecha_evento TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (id_auditoria),
     CONSTRAINT fk_auditoria_vouchers_voucher
         FOREIGN KEY (id_voucher) REFERENCES vouchers (id_voucher)
         ON UPDATE CASCADE ON DELETE RESTRICT,
