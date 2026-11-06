@@ -182,13 +182,13 @@ public class HomeController {
     }
 
     @PostMapping("/admin/login")
-    public String loginSubmit(@RequestParam String username,
+    public String loginSubmit(@RequestParam String correo,
                               @RequestParam String password,
                               HttpSession session,
                               jakarta.servlet.http.HttpServletRequest request,
                               Model model) {
         try {
-            var usuario = autenticacionService.autenticar(username, password);
+            var usuario = autenticacionService.autenticar(correo, password);
             if ("ADMINISTRADOR".equals(usuario.rol())) {
                 request.changeSessionId();
                 session.setAttribute("adminLogged", usuario.id());

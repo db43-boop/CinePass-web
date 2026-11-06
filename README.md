@@ -26,16 +26,16 @@ No es necesario instalar Maven por separado: el proyecto incluye Maven Wrapper.
 
 1. Inicia **MySQL** y **Apache** desde XAMPP Control Panel.
 2. Abre `http://localhost/phpmyadmin`.
-3. En **Importar**, selecciona `database/cinepass.sql` y ejecuta la importación. El script crea la base `cinepass_db`, las tablas, los roles `ADMINISTRADOR` y `CLIENTE`, las plataformas iniciales y los disparadores de auditoría.
+3. En **Importar**, selecciona `database/cinepass.sql` y ejecuta la importación. El script crea la base `cinepass_app`, las tablas, los roles `ADMINISTRADOR` y `CLIENTE`, las plataformas iniciales y los disparadores de auditoría. La configuración actual de la aplicación usa esta base; una base antigua llamada `cinepass_db` no se modifica.
 
 Para una base ya existente creada antes de incorporar la unicidad de contraseñas, revisa `database/002_unicidad_password_cuenta.sql`. Esta migración debe aplicarse una sola vez y fallará si ya existen contraseñas duplicadas o si la columna ya existe. No es necesaria en una base nueva importada desde el script actual.
 
 ## Configurar la conexión
 
-Revisa `src/main/resources/application.properties` y ajusta los datos de tu instalación. Para una instalación local habitual de XAMPP:
+Revisa `src/main/resources/application.properties` y ajusta los datos de tu instalación. Al iniciar, la aplicación comprueba que existan los roles `ADMINISTRADOR` y `CLIENTE` y crea los que falten; sus IDs son autogenerados y no deben fijarse manualmente. Para una instalación local habitual de XAMPP:
 
 ```properties
-spring.datasource.url=jdbc:mysql://localhost:3306/cinepass_db
+spring.datasource.url=jdbc:mysql://localhost:3306/cinepass_app
 spring.datasource.username=root
 spring.datasource.password=
 spring.jpa.hibernate.ddl-auto=update
@@ -64,8 +64,12 @@ Cuando aparezca `Started CinepassWebApplication`, abre `http://localhost:8080`. 
 
 ## Preparar un administrador
 
-1. Abre `http://localhost:8080/registro` y registra una cuenta con un correo y una contraseña propios. El registro crea un usuario con rol `CLIENTE` y guarda la contraseña como hash BCrypt.
-2. En phpMyAdmin, selecciona `cinepass_db` y ejecuta la siguiente consulta, sustituyendo el correo por el que registraste:
+El script `database/cinepass.sql` crea una cuenta de demostración:
+
+- **Correo:** `admin@gmail.com`
+- **Contraseña:** `admin123`
+
+La contraseña se guarda como hash BCrypt, no como texto plano. Esta cuenta es solo para desarrollo local: cambia la contraseña y no la uses en un despliegue público. Para usar otro administrador, registra una cuenta en `http://localhost:8080/registro` y asígnale el rol `ADMINISTRADOR` en phpMyAdmin:
 
 ```sql
 UPDATE usuarios
@@ -73,7 +77,7 @@ SET id_rol = (SELECT id_rol FROM roles WHERE nombre = 'ADMINISTRADOR')
 WHERE correo = 'tu-correo@ejemplo.com';
 ```
 
-3. Entra a `http://localhost:8080/admin/login` con ese correo y contraseña. Desde **Gestionar inventario**, crea una cuenta maestra y después un perfil con su precio. Usa datos ficticios para la demostración.
+Entra a `http://localhost:8080/admin/login` con el correo y la contraseña de la cuenta. El formulario solicita el correo electrónico, no un nombre de usuario. Desde **Gestionar inventario**, crea una cuenta maestra y después un perfil con su precio. Usa datos ficticios para la demostración.
 
 ## Probar el recorrido
 

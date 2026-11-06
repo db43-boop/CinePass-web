@@ -20,8 +20,8 @@
         <form th:action="@{/admin/login}" method="post" class="login-form">
             <input type="hidden" name="_formToken" th:value="${formToken}">
             <div class="field">
-                <label for="username">Usuario</label>
-                <input type="text" id="username" name="username" class="input" placeholder="Ingresa tu usuario" autocomplete="username" required autofocus>
+                <label for="correo">Correo electrónico</label>
+                <input type="email" id="correo" name="correo" class="input" placeholder="Ingresa tu correo electrónico" autocomplete="email" required autofocus>
             </div>
             <div class="field">
                 <label for="password">Contraseña</label>

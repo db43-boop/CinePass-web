@@ -1,8 +1,8 @@
-CREATE DATABASE IF NOT EXISTS cinepass_db
+CREATE DATABASE IF NOT EXISTS cinepass_app
     CHARACTER SET utf8mb4
     COLLATE utf8mb4_unicode_ci;
 
-USE cinepass_db;
+USE cinepass_app;
 
 CREATE TABLE roles (
     id_rol INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -179,6 +179,11 @@ CREATE TABLE auditoria_vouchers (
 
 INSERT IGNORE INTO roles (nombre) VALUES ('ADMINISTRADOR'), ('CLIENTE');
 INSERT IGNORE INTO plataformas (nombre) VALUES ('Netflix'), ('Max (HBO)'), ('Disney+');
+INSERT IGNORE INTO usuarios (id_rol, nombres, apellidos, correo, password_hash, estado)
+SELECT id_rol, 'Admin', 'CinePass', 'admin@gmail.com',
+       '$2a$10$U5Oh1E/.g2sX74OIovOlieA6/Qd31l6N0wIMatcHlJj9WCmd24ZrW', 'ACTIVO'
+FROM roles
+WHERE nombre = 'ADMINISTRADOR';--  correo: admin@gmail.com, clave: admin123
 
 DROP TRIGGER IF EXISTS trg_vouchers_auditoria_insert;
 DROP TRIGGER IF EXISTS trg_vouchers_auditoria_update;
