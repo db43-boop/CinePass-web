@@ -8,18 +8,19 @@
     <p><a class="cp-btn cp-btn-primary" th:href="@{/admin/inventario}">Gestionar inventario</a></p>
     <p role="status" th:if="${mensaje}" th:text="${mensaje}"></p>
     <p role="alert" th:if="${error}" th:text="${error}"></p>
-    <div class="cp-card admin-table-wrap">
+    <div class="cp-card admin-table-wrap admin-pending-table" th:if="${!#lists.isEmpty(comprobantes)}">
         <table class="admin-table">
             <thead><tr><th>Cliente</th><th>Plataforma</th><th>Método</th><th>Operación</th><th>Monto</th><th>Acciones</th></tr></thead>
             <tbody><tr th:each="c : ${comprobantes}">
-                <td th:text="${c.cliente}"></td><td th:text="${c.plataforma}"></td>
-                <td th:text="${c.metodoPago}"></td><td th:text="${c.numeroOperacion}"></td><td th:text="${c.monto}"></td>
-                <td><a th:href="@{/admin/comprobantes/{id}/archivo(id=${c.id})}">Descargar</a>
+                <td data-label="Cliente" th:text="${c.cliente}"></td><td data-label="Plataforma" th:text="${c.plataforma}"></td>
+                <td data-label="Método" th:text="${c.metodoPago}"></td><td data-label="Operación" th:text="${c.numeroOperacion}"></td><td data-label="Monto" th:text="${c.monto}"></td>
+                <td data-label="Acciones"><div class="admin-actions">
+                <a class="cp-btn cp-btn-sm cp-btn-ghost" target="_blank" rel="noopener" th:href="@{/admin/comprobantes/{id}/archivo(id=${c.id})}">Ver PDF</a>
                 <form method="post" th:action="@{/admin/comprobantes/{id}/resolver(id=${c.id})}">
                     <input type="hidden" name="_formToken" th:value="${formToken}">
                     <button class="cp-btn cp-btn-sm cp-btn-ok" name="aprobar" value="true">Aprobar</button>
                     <button class="cp-btn cp-btn-sm cp-btn-bad" name="aprobar" value="false">Rechazar</button>
-                </form></td>
+                </form></div></td>
             </tr></tbody>
         </table>
     </div>

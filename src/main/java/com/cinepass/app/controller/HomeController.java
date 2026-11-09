@@ -166,10 +166,10 @@ public class HomeController {
         Long adminId = (Long) session.getAttribute("adminLogged");
         if (adminId == null) return org.springframework.http.ResponseEntity.status(401).build();
         return org.springframework.http.ResponseEntity.ok()
-                .header("Content-Disposition", "attachment; filename=\"comprobante\"")
+                .header("Content-Disposition", "inline; filename=\"comprobante-" + id + ".pdf\"")
                 .header("X-Content-Type-Options", "nosniff")
                 .header("Cache-Control", "no-store")
-                .contentType(org.springframework.http.MediaType.APPLICATION_OCTET_STREAM)
+                .contentType(org.springframework.http.MediaType.APPLICATION_PDF)
                 .body(validacionPagoService.leerComprobante(adminId, id));
     }
 
@@ -192,6 +192,7 @@ public class HomeController {
             if ("ADMINISTRADOR".equals(usuario.rol())) {
                 request.changeSessionId();
                 session.setAttribute("adminLogged", usuario.id());
+                session.setAttribute("usuarioId", usuario.id());
                 return "redirect:/admin";
             }
         } catch (SecurityException ignored) { }

@@ -26,12 +26,14 @@ public class ComprobanteService {
     private final PedidoRepository pedidos;
     private final TransaccionRepository transacciones;
     private final VoucherRepository vouchers;
+    private final ComprobantePdfConverter pdfConverter;
 
     public ComprobanteService(PedidoRepository pedidos, TransaccionRepository transacciones,
-                              VoucherRepository vouchers) {
+                              VoucherRepository vouchers, ComprobantePdfConverter pdfConverter) {
         this.pedidos = pedidos;
         this.transacciones = transacciones;
         this.vouchers = vouchers;
+        this.pdfConverter = pdfConverter;
     }
 
     @Transactional
@@ -53,12 +55,14 @@ public class ComprobanteService {
         String operacion = datos.numeroOperacion().trim();
         if (transacciones.existsByMetodoPagoAndNumeroOperacion(metodo, operacion))
             throw new IllegalArgumentException("La operación ya está registrada");
-        byte[] archivo = datos.archivo().getBytes();
+        byte[] archivoOriginal = datos.archivo().getBytes();
         String mime;
-        if (archivo.length >= 5 && new String(archivo, 0, 5, java.nio.charset.StandardCharsets.US_ASCII).equals("%PDF-")) mime = "application/pdf";
-        else if (archivo.length >= 8 && archivo[0] == (byte) 0x89 && archivo[1] == 0x50 && archivo[2] == 0x4e && archivo[3] == 0x47 && archivo[4] == 0x0d && archivo[5] == 0x0a && archivo[6] == 0x1a && archivo[7] == 0x0a) mime = "image/png";
-        else if (archivo.length >= 3 && archivo[0] == (byte) 0xff && archivo[1] == (byte) 0xd8 && archivo[2] == (byte) 0xff) mime = "image/jpeg";
+        if (archivoOriginal.length >= 5 && new String(archivoOriginal, 0, 5, java.nio.charset.StandardCharsets.US_ASCII).equals("%PDF-")) mime = "application/pdf";
+        else if (archivoOriginal.length >= 8 && archivoOriginal[0] == (byte) 0x89 && archivoOriginal[1] == 0x50 && archivoOriginal[2] == 0x4e && archivoOriginal[3] == 0x47 && archivoOriginal[4] == 0x0d && archivoOriginal[5] == 0x0a && archivoOriginal[6] == 0x1a && archivoOriginal[7] == 0x0a) mime = "image/png";
+        else if (archivoOriginal.length >= 3 && archivoOriginal[0] == (byte) 0xff && archivoOriginal[1] == (byte) 0xd8 && archivoOriginal[2] == (byte) 0xff) mime = "image/jpeg";
         else throw new IllegalArgumentException("Solo se aceptan PDF, PNG o JPEG");
+        byte[] archivo = pdfConverter.convertir(archivoOriginal, mime);
+        mime = "application/pdf";
         Path carpeta = Path.of("uploads", "comprobantes").toAbsolutePath().normalize();
         Files.createDirectories(carpeta);
         Path destino = carpeta.resolve(UUID.randomUUID().toString());

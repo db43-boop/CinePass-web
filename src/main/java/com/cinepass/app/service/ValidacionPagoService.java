@@ -20,13 +20,16 @@ public class ValidacionPagoService {
     private final PedidoRepository pedidos;
     private final PerfilRepository perfiles;
     private final UsuarioRepository usuarios;
+    private final ComprobantePdfConverter pdfConverter;
 
     public ValidacionPagoService(VoucherRepository vouchers, PedidoRepository pedidos,
-                                PerfilRepository perfiles, UsuarioRepository usuarios) {
+                                PerfilRepository perfiles, UsuarioRepository usuarios,
+                                ComprobantePdfConverter pdfConverter) {
         this.vouchers = vouchers;
         this.pedidos = pedidos;
         this.perfiles = perfiles;
         this.usuarios = usuarios;
+        this.pdfConverter = pdfConverter;
     }
 
     @Transactional(readOnly = true)
@@ -60,7 +63,7 @@ public class ValidacionPagoService {
         java.nio.file.Path archivo = java.nio.file.Path.of(voucher.getRutaArchivo()).toAbsolutePath().normalize();
         if (!archivo.getParent().equals(carpeta) || java.nio.file.Files.isSymbolicLink(archivo))
             throw new SecurityException("Ruta de comprobante inválida");
-        return java.nio.file.Files.readAllBytes(archivo);
+        return pdfConverter.convertir(java.nio.file.Files.readAllBytes(archivo), voucher.getTipoMime());
     }
 
     @Transactional

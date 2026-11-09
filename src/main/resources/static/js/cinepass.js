@@ -104,7 +104,7 @@
     comprobante: () => {
       const f = file.files[0];
       if (!f) return 'Adjunta la captura de tu pago.';
-      if (!/^image\/|^application\/pdf$/.test(f.type)) return 'Usa una imagen (JPG o PNG) o un PDF.';
+      if (!['image/jpeg', 'image/png', 'application/pdf'].includes(f.type)) return 'Usa una imagen JPG o PNG, o un PDF.';
       if (f.size > 5 * 1024 * 1024) return 'El archivo pesa más de 5 MB. Sube una captura más liviana.';
       return true;
     }
