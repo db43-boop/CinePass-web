@@ -28,6 +28,7 @@ public class ReservaService {
     @Transactional
     public Pedido reservar(long usuarioId, long perfilId) {
         Usuario usuario = usuarios.findById(usuarioId).orElse(null);
+        pedidos.liberarReservaVencida(perfilId);
         Perfil perfil = perfiles.buscarParaActualizar(perfilId).orElse(null);
         if (usuario == null || usuario.getEstado() != Usuario.EstadoUsuario.ACTIVO || perfil == null)
             throw new IllegalArgumentException("Usuario o perfil no disponible");

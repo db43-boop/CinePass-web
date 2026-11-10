@@ -17,7 +17,7 @@
             <p class="mb-0" th:text="${error}">Usuario o contraseña no válidos.</p>
         </div>
 
-        <form th:action="@{/admin/login}" method="post" class="login-form">
+        <form th:action="@{/login}" method="post" class="login-form">
             <input type="hidden" name="_formToken" th:value="${formToken}">
             <div class="field">
                 <label for="correo">Correo electrónico</label>

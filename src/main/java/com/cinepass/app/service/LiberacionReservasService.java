@@ -13,7 +13,7 @@ public class LiberacionReservasService {
         this.entityManager = entityManager;
     }
 
-    @Scheduled(fixedDelayString = "${cinepass.reservas.liberacion-ms:60000}")
+    @Scheduled(fixedDelayString = "${cinepass.reservas.liberacion-ms:10000}")
     @Transactional
     public void liberarReservasVencidas() {
         entityManager.createNativeQuery("""

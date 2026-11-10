@@ -47,7 +47,7 @@ public class AuditoriaVoucher {
     private Usuario usuarioActor;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "accion", nullable = false, length = 10)
+    @Column(name = "accion", nullable = false, length = 11)
     private AccionAuditoria accion;
 
     @Enumerated(EnumType.STRING)

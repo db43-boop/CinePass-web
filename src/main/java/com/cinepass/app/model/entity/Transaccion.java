@@ -12,6 +12,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.Getter;
@@ -68,6 +69,9 @@ public class Transaccion {
 
     @Column(name = "fecha_actualizacion", insertable = false, updatable = false)
     private Instant fechaActualizacion;
+
+    @OneToOne(mappedBy = "transaccion", fetch = FetchType.LAZY)
+    private Voucher voucher;
 
     public enum EstadoTransaccion {
         PENDIENTE,

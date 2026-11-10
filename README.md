@@ -77,7 +77,7 @@ SET id_rol = (SELECT id_rol FROM roles WHERE nombre = 'ADMINISTRADOR')
 WHERE correo = 'tu-correo@ejemplo.com';
 ```
 
-Entra a `http://localhost:8080/admin/login` con el correo y la contraseña de la cuenta. El formulario solicita el correo electrónico, no un nombre de usuario. Desde **Gestionar inventario**, crea una cuenta maestra y después un perfil con su precio. Usa datos ficticios para la demostración.
+Entra a `http://localhost:8080/login` con el correo y la contraseña de la cuenta. El mismo formulario autentica ambos roles y redirige al administrador a su panel y al cliente a sus pedidos. Spring Security protege las rutas de cada rol y valida los formularios mediante CSRF. Desde **Gestionar inventario**, crea una cuenta maestra y después un perfil con su precio. Usa datos ficticios para la demostración.
 
 ## Probar el recorrido
 
@@ -88,6 +88,8 @@ Entra a `http://localhost:8080/admin/login` con el correo y la contraseña de la
 5. Si se aprueba, el cliente puede consultar sus credenciales en **Mis pedidos**. Las reservas que vencen sin enviar comprobante se liberan mediante una tarea programada.
 
 Los comprobantes se guardan en la carpeta local `uploads/comprobantes`, relativa al directorio desde el que se inicia la aplicación. Conserva esa carpeta junto con la base de datos si necesitas mantener los archivos de prueba.
+
+Los estados de pedidos corresponden al `ENUM` real del script SQL: `RESERVADA`, `EN_VALIDACION`, `ACTIVA`, `VENCIDA`, `RECHAZADA` y `CANCELADA`. En este modelo, `ACTIVA` es el estado que habilita la entrega de credenciales; no se sustituyeron por `PENDIENTE_VALIDACION` o `COMPLETADO`, porque esos valores no existen en la base de datos existente.
 
 ## Estructura principal
 

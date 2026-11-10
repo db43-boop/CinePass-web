@@ -52,8 +52,12 @@
                     <span class="chip chip-ok">Activa · renueva el <span th:text="${r.renuevaEl}">14 nov</span></span>
                 </th:block>
                 <th:block th:case="*">
-                    <span class="chip chip-bad">Vencida</span>
-                    <a class="cp-btn cp-btn-ghost cp-btn-sm" th:href="@{/checkout/{id}(id=${r.perfilId}, nueva=1)}">Reservar de nuevo</a>
+                    <span class="chip chip-bad" th:text="${r.estado == 'RECHAZADA' ? 'Pago rechazado' : r.estado == 'CANCELADA' ? 'Pedido cancelado' : 'Reserva vencida'}">Reserva vencida</span>
+                    <form th:if="${r.estado == 'VENCIDA' or r.estado == 'RECHAZADA' or r.estado == 'CANCELADA'}"
+                          method="post" th:action="@{/reservas/{id}(id=${r.perfilId})}">
+                        <input type="hidden" name="_formToken" th:value="${formToken}">
+                        <button class="cp-btn cp-btn-ghost cp-btn-sm" type="submit">Reservar de nuevo</button>
+                    </form>
                 </th:block>
             </div>
 

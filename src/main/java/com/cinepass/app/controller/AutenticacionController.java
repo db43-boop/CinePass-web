@@ -1,9 +1,11 @@
 package com.cinepass.app.controller;
 
 import com.cinepass.app.dto.RegistroUsuarioRequest;
+import com.cinepass.app.security.CinePassUserDetails;
 import com.cinepass.app.service.AutenticacionService;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,22 +19,15 @@ public class AutenticacionController {
     public AutenticacionController(AutenticacionService autenticacion) { this.autenticacion = autenticacion; }
 
     @GetMapping("/login")
-    public String login() { return "cliente-login"; }
-
-    @PostMapping("/login")
-    public String ingresar(@RequestParam String correo, @RequestParam String password,
-                           HttpServletRequest request, Model model) {
-        try {
-            var usuario = autenticacion.autenticar(correo, password);
-            HttpSession anterior = request.getSession(false);
-            if (anterior != null) anterior.invalidate();
-            HttpSession sesion = request.getSession(true);
-            sesion.setAttribute("usuarioId", usuario.id());
-            return "redirect:/cliente";
-        } catch (SecurityException ex) {
-            model.addAttribute("error", "Correo o contraseña incorrectos");
-            return "cliente-login";
+    public String login(Authentication authentication,
+                        @AuthenticationPrincipal CinePassUserDetails usuario) {
+        if (authentication != null && authentication.isAuthenticated() && usuario != null) {
+            return usuario.getAuthorities().stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .anyMatch("ROLE_ADMINISTRADOR"::equals)
+                    ? "redirect:/admin" : "redirect:/cliente";
         }
+        return "cliente-login";
     }
 
     @GetMapping("/registro")
@@ -51,10 +46,4 @@ public class AutenticacionController {
         }
     }
 
-    @PostMapping("/salir")
-    public String salir(HttpServletRequest request) {
-        HttpSession sesion = request.getSession(false);
-        if (sesion != null) sesion.invalidate();
-        return "redirect:/";
-    }
 }

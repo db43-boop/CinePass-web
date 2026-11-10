@@ -7,6 +7,7 @@
     <section class="cp-card">
         <h1>Iniciar sesión</h1>
         <p th:if="${param.registrado}">Cuenta creada. Ya puedes iniciar sesión.</p>
+        <p role="alert" th:if="${param.error}">Correo o contraseña incorrectos.</p>
         <p role="alert" th:if="${error}" th:text="${error}"></p>
         <form method="post" th:action="@{/login}">
             <input type="hidden" name="_formToken" th:value="${formToken}">

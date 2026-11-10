@@ -5,7 +5,7 @@ import com.cinepass.app.dto.UsuarioResponse;
 import com.cinepass.app.model.entity.Usuario;
 import com.cinepass.app.repository.RolRepository;
 import com.cinepass.app.repository.UsuarioRepository;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.Locale;
@@ -14,11 +14,12 @@ import java.util.Locale;
 public class AutenticacionService {
     private final UsuarioRepository usuarios;
     private final RolRepository roles;
-    private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+    private final PasswordEncoder encoder;
 
-    public AutenticacionService(UsuarioRepository usuarios, RolRepository roles) {
+    public AutenticacionService(UsuarioRepository usuarios, RolRepository roles, PasswordEncoder encoder) {
         this.usuarios = usuarios;
         this.roles = roles;
+        this.encoder = encoder;
     }
 
     @Transactional
@@ -39,17 +40,6 @@ public class AutenticacionService {
         usuario.setTelefono(datos.telefono());
         usuario.setRol(roles.findByNombre("CLIENTE").orElseThrow(() -> new IllegalStateException("Falta el rol CLIENTE")));
         return response(usuarios.save(usuario));
-    }
-
-    @Transactional(readOnly = true)
-    public UsuarioResponse autenticar(String correo, String password) {
-        if (correo == null || password == null || password.getBytes(java.nio.charset.StandardCharsets.UTF_8).length > 72)
-            throw new SecurityException("Credenciales incorrectas");
-        Usuario usuario = usuarios.findByCorreo(correo.trim().toLowerCase(Locale.ROOT))
-                .orElseThrow(() -> new SecurityException("Credenciales incorrectas"));
-        if (usuario.getEstado() != Usuario.EstadoUsuario.ACTIVO || !encoder.matches(password, usuario.getPasswordHash()))
-            throw new SecurityException("Credenciales incorrectas");
-        return response(usuario);
     }
 
     private UsuarioResponse response(Usuario usuario) {

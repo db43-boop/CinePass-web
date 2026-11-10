@@ -12,6 +12,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.Getter;
@@ -21,6 +22,8 @@ import lombok.Setter;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "perfiles",
@@ -65,6 +68,9 @@ public class Perfil {
 
     @Column(name = "fecha_registro", insertable = false, updatable = false)
     private Instant fechaRegistro;
+
+    @OneToMany(mappedBy = "perfil")
+    private List<Pedido> pedidos = new ArrayList<>();
 
     public enum EstadoPerfil {
         DISPONIBLE,

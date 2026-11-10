@@ -8,21 +8,25 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.ForeignKey;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
+import jakarta.persistence.Index;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.time.Instant;
 
 @Entity
 @Table(name = "usuarios", uniqueConstraints = {
         @UniqueConstraint(name = "uq_usuarios_correo", columnNames = "correo")
-})
+}, indexes = @Index(name = "idx_usuarios_rol_estado", columnList = "id_rol, estado"))
 @Getter
 @Setter
 @NoArgsConstructor
@@ -59,6 +63,12 @@ public class Usuario {
 
     @Column(name = "fecha_registro", insertable = false, updatable = false)
     private Instant fechaRegistro;
+
+    @OneToMany(mappedBy = "usuario")
+    private List<Pedido> pedidos = new ArrayList<>();
+
+    @OneToMany(mappedBy = "usuarioActor")
+    private List<AuditoriaVoucher> auditoriasComoActor = new ArrayList<>();
 
     public enum EstadoUsuario {
         ACTIVO,

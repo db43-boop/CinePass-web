@@ -1,7 +1,9 @@
 package com.cinepass.app.service;
 
 import com.cinepass.app.model.Perfil;
+import com.cinepass.app.model.entity.Plataforma;
 import com.cinepass.app.repository.PerfilRepository;
+import com.cinepass.app.repository.PlataformaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
@@ -10,9 +12,11 @@ import java.util.Locale;
 @Service
 public class CatalogoService {
     private final PerfilRepository perfiles;
+    private final PlataformaRepository plataformas;
 
-    public CatalogoService(PerfilRepository perfiles) {
+    public CatalogoService(PerfilRepository perfiles, PlataformaRepository plataformas) {
         this.perfiles = perfiles;
+        this.plataformas = plataformas;
     }
 
     @Transactional(readOnly = true)
@@ -32,5 +36,10 @@ public class CatalogoService {
             vista.setImagenUrl(plataforma.getLogoUrl());
             return vista;
         }).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<Plataforma> plataformasDisponibles() {
+        return plataformas.findByEstado(Plataforma.EstadoPlataforma.ACTIVA);
     }
 }

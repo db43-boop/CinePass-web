@@ -19,7 +19,10 @@
     <div class="expired-note" id="expired-note" tabindex="-1" role="alert">
         <h2 class="h5 mb-1">⏰ Tu reserva venció</h2>
         <p class="mb-3">Liberamos el perfil para otros clientes. Si aún lo quieres, reserva de nuevo y tendrás otros 15 minutos.</p>
-        <a class="cp-btn cp-btn-primary" th:href="@{/checkout/{id}(id=${perfil.id}, nueva=1)}">Reservar de nuevo</a>
+        <form method="post" th:action="@{/reservas/{id}(id=${perfil.id})}">
+            <input type="hidden" name="_formToken" th:value="${formToken}">
+            <button class="cp-btn cp-btn-primary" type="submit">Reservar de nuevo</button>
+        </form>
     </div>
 
     <div class="row g-4">

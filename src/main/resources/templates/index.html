@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="es">
 <head th:replace="~{fragments/layout :: head('Catálogo de streaming')}"></head>
 <body>
 <header th:replace="~{fragments/layout :: nav('catalogo')}"></header>
@@ -22,29 +22,15 @@
         </div>
     </section>
 
-    <!-- Plataformas que ofrecemos -->
     <section class="container py-4" aria-labelledby="t-plats">
         <h2 id="t-plats" class="h4 text-center mb-4 animate-in">Plataformas disponibles</h2>
         <div class="platforms-row">
-            <div class="platform-card animate-in p-netflix">
-                <img src="https://www.mercadonegro.pe/wp-content/uploads/2023/12/netflix-2.png" alt="Netflix" loading="lazy">
+            <div class="platform-card animate-in" th:each="plataforma : ${plataformas}">
+                <img th:if="${plataforma.logoUrl != null and !#strings.isEmpty(plataforma.logoUrl)}"
+                     th:src="${plataforma.logoUrl}" th:alt="${plataforma.nombre}" loading="lazy">
                 <div class="platform-info">
-                    <h3>Netflix</h3>
-                    <p>Series, películas y documentales en 4K.</p>
-                </div>
-            </div>
-            <div class="platform-card animate-in p-max">
-                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQl93CG_oNImmzxYnJ2DopAmS2CIEQEQp9HYkI-44OHGaLrc2QqJnmFtVNH&s=10" alt="Max (HBO)" loading="lazy">
-                <div class="platform-info">
-                    <h3>Max (HBO)</h3>
-                    <p>Contenido HBO, Warner Bros y más.</p>
-                </div>
-            </div>
-            <div class="platform-card animate-in p-disney">
-                <img src="https://images.unsplash.com/photo-1596727147705-61a532a659bd?w=400&h=250&fit=crop" alt="Disney+" loading="lazy">
-                <div class="platform-info">
-                    <h3>Disney+</h3>
-                    <p>Disney, Pixar, Marvel, Star Wars y National Geographic.</p>
+                    <h3 th:text="${plataforma.nombre}">Plataforma</h3>
+                    <p th:text="${plataforma.descripcion != null ? plataforma.descripcion : 'Perfiles disponibles para reservar.'}">Descripción</p>
                 </div>
             </div>
         </div>
@@ -70,7 +56,11 @@
                             <small>por mes</small>
                         </div>
                         <div th:switch="${perfil.estado}">
-                            <form th:case="'DISPONIBLE'" method="post" th:action="@{/reservas/{id}(id=${perfil.id})}"><input type="hidden" name="_formToken" th:value="${formToken}"><button type="submit" class="cp-btn cp-btn-primary w-100">Reservar por 15 min</button></form>
+                            <th:block th:case="'DISPONIBLE'">
+                                <form sec:authorize="hasRole('CLIENTE')" method="post" th:action="@{/reservas/{id}(id=${perfil.id})}"><input type="hidden" name="_formToken" th:value="${formToken}"><button type="submit" class="cp-btn cp-btn-primary w-100">Reservar por 15 min</button></form>
+                                <a sec:authorize="isAnonymous()" class="cp-btn cp-btn-primary w-100" th:href="@{/login}">Inicia sesión para reservar</a>
+                                <span sec:authorize="hasRole('ADMINISTRADOR')" class="cp-btn cp-btn-ghost w-100 is-disabled">Solo para clientes</span>
+                            </th:block>
                             <span th:case="*" class="cp-btn cp-btn-ghost w-100 is-disabled">Agotado</span>
                         </div>
                     </div>
